@@ -1,0 +1,16 @@
+{
+  "name": "library-site-crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Justin Merz <jrmerz@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "crawler": "^1.0.5",
+    "fs-extra": "^4.0.1",
+    "puppeteer": "^0.10.2"
+  }
+}
