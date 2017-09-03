@@ -1,0 +1,21 @@
+{
+  "name": "library-site-crawler",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "Justin Merz <jrmerz@gmail.com>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/UCDavisLibrary/library-site-crawler",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.2",
+    "iron-pages": "^2.0.0"
+  }
+}

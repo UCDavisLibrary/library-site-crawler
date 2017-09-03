@@ -18,6 +18,8 @@ var crawlerController = new CrawlerController(() => {
   result.baseUrl = BASE_URL;
   fs.writeFileSync('crawler-results.json', JSON.stringify(result, '  ', '  '));
   console.log('done. urls='+Object.keys(crawled).length+' '+Object.keys(crawling).length);
+
+  require('./lib/screenshot');
 });
 
 // we only ever store path and search param information

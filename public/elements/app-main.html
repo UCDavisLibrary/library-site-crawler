@@ -1,0 +1,200 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="app-main">
+  <template>
+    <style>
+      :host {
+        display: block
+      }
+    </style>
+
+    <iron-pages selected="[[page]]" selected-attribute="active" attr-for-selected="id">
+      <div id="stats">
+          <h1>Crawl Stats</h1>
+        <div style="display:flex; align-items:center; justify-content:center">
+          <table>
+            <tr>
+              <td># Pages: </td>
+              <td>[[data.stats.pages]]</td>
+            </tr>
+            <tr>
+              <td>Average Load Time: </td>
+              <td>[[data.stats.averageLoadTime]]ms</td>
+            </tr>
+            <tr>
+              <td>404's: </td>
+              <td>[[data.stats._404]]</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="display:flex; justify-content:center">
+          <div>
+            <h2>Twig Templates</h2>
+            <template is="dom-repeat" items="[[data.stats.twigs]]">
+              <div>[[item.template]] [[item.count]]</div>
+            </template>
+          </div>
+          <div>
+            <h2>PHP Pages</h2>
+            <template is="dom-repeat" items="[[data.stats.php]]">
+              <div>[[item.template]] [[item.count]]</div>
+            </template>
+          </div>
+        </div>
+      </div>
+      <app-show-page id="page" page="[[showPageUrl]]"></app-show-page>
+      <app-search id="search" search-params="[[searchParams]]"></app-search>
+    </iron-pages>
+
+  </template>
+
+  <script>
+    function sendEvent(e, data) {
+      window.dispatchEvent(new CustomEvent(e, {detail: data}));
+    }
+
+
+    class AppMain extends Polymer.Element {
+
+      static get is() {return 'app-main';}
+
+
+      static get properties() {
+        return {
+          page : {
+            type : String,
+            value : 'stats'
+          },
+          showPageUrl : {
+            type : String,
+            value : ''
+          }
+        };
+      }
+
+      ready() {
+        super.ready();
+        this._loadData();
+
+        window.addEventListener('hashchange', this._onPageChange.bind(this));
+        this._onPageChange();
+      }
+
+      _onPageChange() {
+        var parts = window.location.hash.replace(/#/,'').split('/');
+
+        if( parts.length === 0 ) {
+          return this.page = 'stats';
+        }
+
+        if( parts[0] === '' ) parts.splice(0, 1);
+        if( parts.length === 0 ) {
+          return this.page = 'stats';
+        }
+
+        this.page = parts[0];
+        
+        if( this.page === 'page' ) {
+          parts.splice(0, 1);
+          this.showPageUrl = parts.join('/');
+        }
+
+      }
+
+      async _loadData() {
+        var resp = await fetch('/data.json');
+        var data = await resp.json();
+
+        this._processData(data);
+        this.data = data;
+
+        sendEvent('data-loaded', this.data);
+        console.log('data ready');
+      }
+
+      _processData(data) {
+
+        var loadTime = 0;
+
+        data.twigs = {};
+        data.php = {};
+        data.renderedBy = {};
+        data._404 = [];
+
+        // add inbound links to all pages
+        for( var key in data.pages ){
+          var page = data.pages[key];
+
+          if( page.error ) {
+            if( page.statusCode === 404 ) {
+              data._404.push(key);
+            }
+            continue;
+          }
+
+          page.links.forEach((link) => {
+            this._addInboundLink(data, link, key);
+          });
+
+          loadTime += page.time;
+
+          if( data.twigs[page.twig] ) data.twigs[page.twig]++;
+          else data.twigs[page.twig] = 1;
+
+          if( data.php[page.php] ) data.php[page.php]++;
+          else data.php[page.php] = 1;
+          
+          var renderedByKey = page.php+' '+page.twig;
+          if( data.renderedBy[renderedByKey] ) {
+            data.renderedBy[renderedByKey].push(key);
+          } else {
+            data.renderedBy[renderedByKey] = [key];
+          }
+        }
+
+        
+        data.stats = {
+          pages : Object.keys(data.pages).length,
+          averageLoadTime : Math.round(loadTime / Object.keys(data.pages).length),
+          _404 : Object.keys(data._404).length,
+          render : {}
+        }
+
+        var tmp = [];
+        for( var key in data.twigs ) {
+          tmp.push({template: key, count: data.twigs[key]});
+        }
+        data.stats.twigs = tmp;
+        
+        tmp = [];
+        for( var key in data.php ) {
+          tmp.push({template: key, count: data.php[key]});
+        }
+        data.stats.php = tmp;
+
+        data.twigs = Object.keys(data.twigs);
+        data.php = Object.keys(data.php);
+
+
+        for( var key in data.renderedBy ) {
+          data.stats.render[key] = data.renderedBy[key].length;
+        }
+        data.stats.renderCombinations = Object.keys(data.stats.render).length;
+
+        window.data = data;
+      }
+
+      _addInboundLink(data, page, inboundLink) {
+        if( !data.pages[page].inboundLinks ) {
+          data.pages[page].inboundLinks = [inboundLink];
+        } else {
+          data.pages[page].inboundLinks.push(inboundLink);
+        }
+      }
+
+    }
+
+    window.customElements.define(AppMain.is, AppMain);
+  </script>
+</dom-module>

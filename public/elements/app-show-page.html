@@ -1,0 +1,94 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="app-show-page">
+  <template>
+    <style>
+      :host {
+        display: block
+      }
+
+      .root {
+        display: flex;
+        justify-content: center;
+      }
+
+      .root > div {
+        flex: 1;
+        width: 33%;
+      }
+
+      .overflow {
+        overflow: auto;
+        max-height: 400px;
+      }
+    </style>
+
+    <div class="root">
+      <div>
+        <h2>Inbound Links</h2>
+        <div class="overflow">
+          <template is="dom-repeat" items="[[data.inboundLinks]]">
+            <div><a href="#/page/[[item]]">[[item]]</a></div>
+          </template>
+        </div>
+      </div>
+      <div>
+        <h1>Page: [[page]]</h1>
+        <div>Twig [[data.twig]]</div>
+        <div>PHP [[data.php]]</div>
+      </div>
+      <div>
+        <h2>Links</h2>
+        <div class="overflow">
+          <template is="dom-repeat" items="[[data.links]]">
+            <div><a href="#/page/[[item]]">[[item]]</a></div>
+          </template>
+        </div>
+      </div>
+    </div>
+    
+
+  </template>
+
+  <script>
+    
+    class AppShowPage extends Polymer.Element {
+      /**
+       * String providing the tag name to register the element under.
+       */
+      static get is() {return 'app-show-page';}
+
+      /**
+       * Object describing property-related metadata used by Polymer features
+       */
+      static get properties() {
+        return {
+          data : {
+            type : Object,
+            value : function() {
+              return {};
+            }
+          },
+          page : {
+            type : String,
+            value : '',
+            observer : '_onPageChange'
+          }
+        };
+      }
+
+      constructor() {
+        super();
+        window.addEventListener('data-loaded', this._onPageChange.bind(this));
+      }
+
+      _onPageChange() {
+        if( !window.data ) return;
+        this.data = data.pages[this.page];
+      }
+
+    }
+
+    window.customElements.define(AppShowPage.is, AppShowPage);
+  </script>
+</dom-module>

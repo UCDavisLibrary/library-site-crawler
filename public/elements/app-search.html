@@ -1,0 +1,82 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="app-search">
+  <template>
+    <style>
+      :host {
+        display: block
+      }
+    </style>
+
+    <div style="display:flex">
+      <div><input placeholder="search" /></div>
+      <div>
+        PHP: 
+        <select id="php">
+          <option></option>
+          <template is="dom-repeat" items="[[data.php]]">
+            <option value="[[item]]">[[item]]</option> 
+          </template>
+        </select>
+      </div>
+      <div>
+          Twig: 
+          <select id="twig">
+            <option></option>
+            <template is="dom-repeat" items="[[data.twigs]]">
+              <option value="[[item]]">[[item]]</option> 
+            </template>
+          </select>
+        </div>
+    </div>
+
+  </template>
+
+  <script>
+
+    class AppSearch extends Polymer.Element {
+ 
+      static get is() {
+        return 'app-search';
+      }
+
+
+      static get properties() {
+        return {
+          data : {
+            type : Object,
+            value : function() {
+              return {}
+            }
+          },
+          searchParams : {
+            type : Object,
+            value : function() {
+              return {}
+            },
+            observer : '_search'
+          }
+        };
+      }
+
+      constructor() {
+        super();
+
+        window.addEventListener('data-loaded', this._onDataLoad.bind(this));
+        if( window.data ) this._onDataLoad();
+      }
+
+      _onDataLoad() {
+        debugger;
+        this.data = window.data;
+      }
+
+      _search() {
+
+      }
+
+    }
+
+    window.customElements.define(AppSearch.is, AppSearch);
+  </script>
+</dom-module>
