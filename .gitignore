@@ -2,3 +2,4 @@ node_modules
 screenshots
 crawler-results.json
 public/bower_components
+config.json

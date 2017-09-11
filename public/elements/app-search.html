@@ -9,25 +9,31 @@
     </style>
 
     <div style="display:flex">
-      <div><input placeholder="search" /></div>
+      <div><input placeholder="search" id="search" on-change="_search" /></div>
       <div>
         PHP: 
-        <select id="php">
+        <select id="php" on-change="_search">
           <option></option>
-          <template is="dom-repeat" items="[[data.php]]">
+          <template is="dom-repeat" items="[[php]]">
             <option value="[[item]]">[[item]]</option> 
           </template>
         </select>
       </div>
       <div>
           Twig: 
-          <select id="twig">
+          <select id="twig" on-change="_search">
             <option></option>
-            <template is="dom-repeat" items="[[data.twigs]]">
+            <template is="dom-repeat" items="[[twigs]]">
               <option value="[[item]]">[[item]]</option> 
             </template>
           </select>
         </div>
+    </div>
+
+    <div>
+      <template is="dom-repeat" items="[[results]]">
+        <div><a href="#/page/[[item]]">[[item]]</a></div>
+      </template>
     </div>
 
   </template>
@@ -49,6 +55,24 @@
               return {}
             }
           },
+          results : {
+            type : Array,
+            value : function() {
+              return [];
+            }
+          },
+          php : {
+            type : Array,
+            value : function() {
+              return [];
+            }
+          },
+          twigs : {
+            type : Array,
+            value : function() {
+              return [];
+            }
+          },
           searchParams : {
             type : Object,
             value : function() {
@@ -62,17 +86,61 @@
       constructor() {
         super();
 
+        this.searchTimer = -1;
         window.addEventListener('data-loaded', this._onDataLoad.bind(this));
         if( window.data ) this._onDataLoad();
       }
 
       _onDataLoad() {
-        debugger;
         this.data = window.data;
       }
 
       _search() {
+        if( this.searchTimer !== -1 ) clearTimeout(this.searchTimer);
+        this.searchTimer = setTimeout(() => {
+          this.searchTimer = -1;
+          this._searchAsync();
+        }, 200);
+      }
 
+      _searchAsync() {
+        var php = this.$.php.value;
+        var twig = this.$.twig.value;
+        var re = new RegExp(this.$.search.value, '');
+
+        var results = [];
+        var phps = {};
+        var twigs = {};
+
+        for( var key in this.data.pages ) {
+          if( this.data.pages[key].error ) continue;
+
+          // if( !this.data.pages[key].php || !this.data.pages[key].twig) {
+          //   console.log('ISSUE', key, this.data.pages[key])
+          // }
+
+          if( !re.test(key) ) continue;
+
+          if( php && this.data.pages[key].php !== php ) {
+            continue;
+          }
+          if( twig && this.data.pages[key].twig !== twig ) {
+            continue;
+          }
+
+          results.push(key);
+          phps[this.data.pages[key].php] = true;
+          twigs[this.data.pages[key].twig] = true;
+        }
+
+        this.php = Object.keys(phps);
+        this.twigs = Object.keys(twigs);
+        this.results = results;
+
+        setTimeout(() => {
+          this.$.php.value = php;
+          this.$.twig.value = twig;
+        }, 200);
       }
 
     }

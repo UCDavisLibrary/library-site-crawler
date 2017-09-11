@@ -1,0 +1,91 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="app-screenshots">
+  <template>
+    <style>
+        :host {
+            display: block
+        }
+    </style>
+
+    <template is="dom-repeat" items="[[pages]]">
+      <div>
+        <h3 style="margin-bottom: 0">
+          <a href="[[item.url]]" target="_blank">[[item.path]]</a>
+          <a href="#/page/[[item.path]]" style="font-size: 12px">page info</a>
+        </h3>
+      </div>
+      <div style="margin-bottom: 15px">
+        <template is="dom-repeat" items="[[item.screenshots]]" as="screenshot">
+          <a href="[[screenshot.url]]" target="_blank">[[screenshot.label]]</a>
+        </template>
+      </div>
+    </template>
+      
+
+  </template>
+
+  <script>
+    /**
+      * `app-screenshots` Description
+      *
+      * @summary ShortDescription.
+      * @customElement
+      * @polymer
+                            * @extends {Polymer.Element}
+      */
+    class AppScreenshots extends Polymer.Element {
+
+      static get is() {return 'app-screenshots';}
+
+      /**
+        * Object describing property-related metadata used by Polymer features
+        */
+      static get properties() {
+        return {
+          pages : {
+            type : Array,
+            value : function() {
+              return [];
+            }
+          }
+        };
+      }
+
+      constructor() {
+        super();
+        window.addEventListener('data-loaded', this._onDataLoad.bind(this));
+        if( window.data ) this._onDataLoad();
+      }
+
+      /**
+      * Use for one-time configuration of your component after local DOM is initialized. 
+      */
+      _onDataLoad() {
+        var arr = [];
+        for( var key in data.pages ) {
+          if( data.pages[key].screenshots ) {
+            
+            var screenshots = [];
+            for( var key2 in data.pages[key].screenshots ) {
+              screenshots.push({
+                label : key2,
+                url : '/screenshots/'+data.pages[key].screenshots[key2]
+              })
+            }
+
+            arr.push({
+              url : data.baseUrl+key,
+              path : key,
+              screenshots : screenshots
+            });
+          }
+        }
+        
+        this.pages = arr;
+      }
+    }
+
+    window.customElements.define(AppScreenshots.is, AppScreenshots);
+  </script>
+</dom-module>

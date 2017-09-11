@@ -6,7 +6,25 @@
       :host {
         display: block
       }
+      .header {
+        display: flex;
+      }
     </style>
+
+    <div class="header">
+      <div style="flex:1">
+        Library Website Crawler
+      </div>
+      <div>
+        Go to
+        <select on-change="goto" id="goto">
+          <option value=""></option>
+          <option value="stats">Stats</option>
+          <option value="search">Search</option>
+          <option value="screenshots">Screenshots</option>
+        </select>
+      </div>
+    </div>
 
     <iron-pages selected="[[page]]" selected-attribute="active" attr-for-selected="id">
       <div id="stats">
@@ -45,6 +63,7 @@
       </div>
       <app-show-page id="page" page="[[showPageUrl]]"></app-show-page>
       <app-search id="search" search-params="[[searchParams]]"></app-search>
+      <app-screenshots id="screenshots"></app-screenshots>
     </iron-pages>
 
   </template>
@@ -64,7 +83,8 @@
         return {
           page : {
             type : String,
-            value : 'stats'
+            value : 'stats',
+            observer : '_setGoToSelector'
           },
           showPageUrl : {
             type : String,
@@ -100,6 +120,15 @@
           this.showPageUrl = parts.join('/');
         }
 
+      }
+
+      _setGoToSelector() {
+        this.$.goto.value = this.page;
+      }
+
+      goto(e) {
+        if( !e.currentTarget.value ) return;
+        window.location.hash = e.currentTarget.value;
       }
 
       async _loadData() {

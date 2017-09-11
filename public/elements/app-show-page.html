@@ -25,7 +25,7 @@
 
     <div class="root">
       <div>
-        <h2>Inbound Links</h2>
+        <h2>Inbound Links ([[data.inboundLinks.length]])</h2>
         <div class="overflow">
           <template is="dom-repeat" items="[[data.inboundLinks]]">
             <div><a href="#/page/[[item]]">[[item]]</a></div>
@@ -33,12 +33,20 @@
         </div>
       </div>
       <div>
-        <h1>Page: [[page]]</h1>
-        <div>Twig [[data.twig]]</div>
-        <div>PHP [[data.php]]</div>
+        <h1>Page: <a href="[[baseUrl]][[page]]" target="_blank">[[page]]</a></h1>
+        <div><b>Twig:</b> [[data.twig]]</div>
+        <div><b>PHP:</b> [[data.php]]</div>
+        <div><a href="[[analyticsUrl]]" target="_blank">Google Analytics</a></div>
+
+        <template is="dom-if" if="[[data.screenshots]]">
+          <h3>Screenshots</h3>
+          <template is="dom-repeat" items="[[screenshots]]">
+            <div><a href="[[item.url]]" target="_blank">[[item.label]]</a></div>
+          </template>
+        </template>
       </div>
       <div>
-        <h2>Links</h2>
+        <h2>Links ([[data.links.length]])</h2>
         <div class="overflow">
           <template is="dom-repeat" items="[[data.links]]">
             <div><a href="#/page/[[item]]">[[item]]</a></div>
@@ -69,10 +77,20 @@
               return {};
             }
           },
+          screenshots : {
+            type : Array,
+            value : function() {
+              return [];
+            }
+          },
           page : {
             type : String,
             value : '',
             observer : '_onPageChange'
+          },
+          baseUrl : {
+            type : String,
+            value : ''
           }
         };
       }
@@ -83,8 +101,23 @@
       }
 
       _onPageChange() {
-        if( !window.data ) return;
+        if( !window.data || !this.page ) return;
+        this.baseUrl = data.baseUrl;
         this.data = data.pages[this.page];
+        
+        var screenshots = [];
+        if( this.data.screenshots ) {
+          for( var key in this.data.screenshots ) {
+            screenshots.push({
+              label : key,
+              url : `/screenshots/${this.data.screenshots[key]}`
+            });
+          }
+        }
+        this.screenshots = screenshots;
+
+        var encodedPath = encodeURIComponent(this.page);
+        this.analyticsUrl = `https://analytics.google.com/analytics/web/?authuser=1#report/content-pages/a65988958w102364108p106378536/%3Fexplorer-table.plotKeys%3D%5B%5D%26_r.drilldown%3Danalytics.pagePath%3A${encodedPath}/`;
       }
 
     }
