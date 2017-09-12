@@ -218,7 +218,9 @@
         }
         data.stats.renderCombinations = Object.keys(data.stats.render).length;
 
-        this.crawledAt = new Date(data.crawledAt).toISOString();
+        try {
+          this.crawledAt = new Date(data.crawledAt).toISOString();
+        } catch(e) {}
 
         window.data = data;
       }
