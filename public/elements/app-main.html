@@ -32,6 +32,10 @@
         <div style="display:flex; align-items:center; justify-content:center">
           <table>
             <tr>
+              <td>Crawled At</td>
+              <td>[[crawledAt]]</td>
+            </tr>
+            <tr>
               <td># Pages: </td>
               <td>[[data.stats.pages]]</td>
             </tr>
@@ -89,6 +93,10 @@
           showPageUrl : {
             type : String,
             value : ''
+          },
+          crawledAt : {
+            type : String,
+            value : ''
           }
         };
       }
@@ -139,7 +147,6 @@
         this.data = data;
 
         sendEvent('data-loaded', this.data);
-        console.log('data ready');
       }
 
       _processData(data) {
@@ -210,6 +217,8 @@
           data.stats.render[key] = data.renderedBy[key].length;
         }
         data.stats.renderCombinations = Object.keys(data.stats.render).length;
+
+        this.crawledAt = new Date(data.crawledAt).toISOString();
 
         window.data = data;
       }
