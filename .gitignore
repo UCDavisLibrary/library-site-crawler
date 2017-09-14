@@ -3,3 +3,4 @@ screenshots
 crawler-results.json
 public/bower_components
 config.json
+upload.sh
